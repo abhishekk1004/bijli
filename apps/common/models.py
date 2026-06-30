@@ -20,7 +20,7 @@ class ActiveModel(TimeStampedModel):
 
     is_active = models.BooleanField(default=True, db_index=True, verbose_name='Is Active')
 
-    class Meta:
+    class Meta(TimeStampedModel.Meta):
         abstract = True
 
 

@@ -1,8 +1,14 @@
 from django.core.cache import cache
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', 60 * 60)  # 1 hour default
+
+
+# Sentinel object to distinguish cached None from cache miss
+_CACHE_MISS = object()
 
 
 def cache_get_or_set(key, callback, ttl=CACHE_TTL):
@@ -17,8 +23,8 @@ def cache_get_or_set(key, callback, ttl=CACHE_TTL):
     Returns:
         Cached or computed value
     """
-    value = cache.get(key)
-    if value is None:
+    value = cache.get(key, _CACHE_MISS)
+    if value is _CACHE_MISS:
         value = callback()
         cache.set(key, value, ttl)
     return value
@@ -47,8 +53,8 @@ def cache_invalidate_pattern(pattern):
     try:
         from django_redis import get_redis_connection
         redis_conn = get_redis_connection('default')
-        keys = redis_conn.keys(pattern)
-        if keys:
-            redis_conn.delete(*keys)
+        # Use scan_iter instead of keys() for non-blocking iteration
+        for key in redis_conn.scan_iter(match=pattern):
+            redis_conn.delete(key)
     except Exception:
-        pass
+        logger.exception("Failed to invalidate cache pattern: %s", pattern)

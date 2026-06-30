@@ -1,8 +1,9 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from apps.common.models import ActiveModel, SlugModel, SEOModel, OrderableModel
 from apps.common.managers import ActiveManager
-from apps.common.utils import upload_to
+from apps.common.utils import upload_to, generate_unique_slug
 from apps.common.choices import SocialPlatform
 
 
@@ -21,7 +22,8 @@ class CompanyInfo(ActiveModel):
     google_map = models.URLField(blank=True)
     copyright = models.CharField(max_length=255)
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         verbose_name = "Company Information"
@@ -39,7 +41,8 @@ class SocialMedia(ActiveModel):
     icon = models.CharField(max_length=50, blank=True, help_text="Font Awesome icon class")
     order = models.PositiveIntegerField(default=0)
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         ordering = ["order", "platform"]
@@ -60,7 +63,8 @@ class NavbarLink(ActiveModel, SlugModel, OrderableModel):
     )
     is_footer = models.BooleanField(default=False, help_text="Show in footer as well")
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         ordering = ["order"]
@@ -75,7 +79,11 @@ class FooterSection(OrderableModel):
     """Footer sections with links."""
 
     title = models.CharField(max_length=100)
-    column = models.PositiveIntegerField(default=1, help_text="Footer column (1-4)")
+    column = models.PositiveIntegerField(
+        default=1,
+        help_text="Footer column (1-4)",
+        validators=[MinValueValidator(1), MaxValueValidator(4)]
+    )
     links = models.ManyToManyField(NavbarLink, blank=True, related_name='footer_sections')
 
     class Meta:
@@ -97,7 +105,8 @@ class HeroSlider(ActiveModel, OrderableModel):
     button_url = models.CharField(max_length=255, blank=True)
     is_fullscreen = models.BooleanField(default=False)
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         ordering = ["order"]
@@ -116,7 +125,8 @@ class Client(ActiveModel, OrderableModel):
     website = models.URLField(blank=True)
     description = models.TextField(blank=True)
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         ordering = ["order"]
@@ -135,9 +145,14 @@ class Testimonial(ActiveModel):
     designation = models.CharField(max_length=100, blank=True)
     image = models.ImageField(upload_to=upload_to, blank=True, null=True)
     message = models.TextField()
-    rating = models.PositiveIntegerField(default=5, help_text="Rating out of 5")
+    rating = models.PositiveIntegerField(
+        default=5,
+        help_text="Rating out of 5",
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
 
-    objects = ActiveManager()
+    objects = models.Manager()
+    active = ActiveManager()
 
     class Meta:
         verbose_name = "Testimonial"
@@ -167,5 +182,5 @@ class SEOSetting(SlugModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = self.page_name.lower().replace(' ', '-')
+            self.slug = generate_unique_slug(self, 'slug')
         super().save(*args, **kwargs)
