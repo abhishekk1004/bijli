@@ -1,0 +1,1 @@
+# Common App - Abstract models, managers, and utilities

@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'apps.core',
+    'apps.common',
     'apps.about',
     'apps.services',
     'apps.projects',
