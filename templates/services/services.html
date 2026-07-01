@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Services - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">Our Services</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Services</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="section">
+    <div class="container">
+        {% if current_category %}
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-subtitle">{{ current_category.name }}</span>
+                <h2 class="section-title">{{ current_category.name }} Services</h2>
+                <p class="section-description">Browse our {{ current_category.name|lower }} services</p>
+            </div>
+        {% else %}
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-subtitle">What We Offer</span>
+                <h2 class="section-title">Our Services</h2>
+                <p class="section-description">Comprehensive solutions for all your electrical, telecom, and solar energy needs</p>
+            </div>
+        {% endif %}
+        
+        <!-- Category Filter -->
+        {% if categories %}
+            <div class="category-filter mb-5" data-aos="fade-up">
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{% url 'services:home' %}" class="btn {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        All Services
+                    </a>
+                    {% for category in categories %}
+                        <a href="{% url 'services:category' category.slug %}" 
+                           class="btn {% if current_category.slug == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            {{ category.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="row g-4">
+            {% for service in services %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="card service-card h-100">
+                        {% if service.image %}
+                            <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.name }}">
+                        {% else %}
+                            <div class="service-icon-lg">
+                                {% if service.icon %}
+                                    <i class="{{ service.icon }}"></i>
+                                {% else %}
+                                    <i class="fas fa-bolt"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            {% if service.category %}
+                                <span class="badge bg-primary mb-2">{{ service.category.name }}</span>
+                            {% endif %}
+                            <h3 class="card-title">{{ service.name }}</h3>
+                            <p class="card-text">{{ service.description }}</p>
+                            <ul class="list-unstyled mb-4">
+                                {% if service.features %}
+                                    {% for feature in service.features_list|slice:":4" %}
+                                        <li><i class="fas fa-check text-primary me-2"></i>{{ feature }}</li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                            <a href="{% url 'services:detail' service.slug %}" class="btn btn-primary">
+                                Learn More <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Services coming soon. Please check back later.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="text-white mb-3">Need a Custom Solution?</h2>
+                <p class="text-white-50 mb-0">Contact us today and let our experts help you find the perfect solution for your needs.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0" data-aos="fade-up" data-aos-delay="100">
+                <a href="{% url 'contact:home' %}" class="btn btn-accent btn-lg">
+                    <i class="fas fa-phone me-2"></i> Get Free Quote
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

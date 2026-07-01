@@ -1,3 +1,51 @@
 from django.db import models
+from apps.common.models import ActiveModel, SlugModel, OrderableModel
+from apps.common.utils import upload_to
 
-# Create your models here.
+
+class Category(ActiveModel, SlugModel, OrderableModel):
+    """Product category model."""
+    
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to=upload_to, blank=True, null=True)
+    
+    class Meta:
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
+class Product(ActiveModel, SlugModel, OrderableModel):
+    """Product model."""
+    
+    name = models.CharField(max_length=200)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    short_description = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ImageField(upload_to=upload_to, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    features = models.TextField(blank=True, help_text='Comma-separated list of features')
+    specifications = models.TextField(blank=True, help_text='Comma-separated list of specifications')
+    is_featured = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+    
+    def get_features_list(self):
+        if self.features:
+            return [f.strip() for f in self.features.split(',')]
+        return []
+    
+    def get_specifications_list(self):
+        if self.specifications:
+            return [s.strip() for s in self.specifications.split(',')]
+        return []

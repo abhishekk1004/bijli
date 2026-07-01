@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ project.name }} - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">{{ project.name }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'projects:home' %}">Projects</a></li>
+                {% if project.category %}
+                    <li class="breadcrumb-item"><a href="{% url 'projects:category' project.category.slug %}">{{ project.category.name }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active text-white" aria-current="page">{{ project.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Project Detail Section -->
+<section class="section">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Project Images -->
+            <div class="col-lg-7">
+                {% if project.image %}
+                    <div class="project-gallery" data-aos="fade-right">
+                        <img src="{{ project.image.url }}" alt="{{ project.name }}" class="img-fluid rounded shadow">
+                    </div>
+                {% else %}
+                    <div class="project-gallery" data-aos="fade-right">
+                        <div class="project-image-placeholder-lg">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Project Info -->
+            <div class="col-lg-5">
+                <div data-aos="fade-left">
+                    {% if project.category %}
+                        <span class="badge bg-primary mb-3">{{ project.category.name }}</span>
+                    {% endif %}
+                    <h2 class="mb-3">{{ project.name }}</h2>
+                    <p class="lead text-muted mb-4">{{ project.description }}</p>
+                    
+                    <!-- Project Meta -->
+                    <div class="project-meta-box mb-4">
+                        <h4 class="h6 mb-3">Project Details</h4>
+                        <ul class="list-unstyled">
+                            {% if project.location %}
+                                <li class="mb-2">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    <strong>Location:</strong> {{ project.location }}
+                                </li>
+                            {% endif %}
+                            {% if project.client %}
+                                <li class="mb-2">
+                                    <i class="fas fa-user text-primary me-2"></i>
+                                    <strong>Client:</strong> {{ project.client }}
+                                </li>
+                            {% endif %}
+                            {% if project.completion_date %}
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <strong>Completed:</strong> {{ project.completion_date|date:"F Y" }}
+                                </li>
+                            {% endif %}
+                            {% if project.project_value %}
+                                <li class="mb-2">
+                                    <i class="fas fa-rupee-sign text-primary me-2"></i>
+                                    <strong>Project Value:</strong> ₹{{ project.project_value }}
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Scope of Work -->
+                    {% if project.scope %}
+                        <div class="project-scope mb-4">
+                            <h4 class="h6 mb-3">Scope of Work</h4>
+                            <p>{{ project.scope|linebreaks }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Action Buttons -->
+                    <div class="project-actions d-flex flex-wrap gap-3">
+                        <a href="{% url 'contact:home' %}?project={{ project.name }}" class="btn btn-primary">
+                            <i class="fas fa-phone me-2"></i> Request Similar Project
+                        </a>
+                        <a href="{% url 'projects:home' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Projects
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Project Content -->
+{% if project.content %}
+<section class="section section-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto" data-aos="fade-up">
+                <h3 class="h4 mb-4">Project Overview</h3>
+                <div class="project-content">
+                    {{ project.content|linebreaks }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Related Projects -->
+{% if related_projects %}
+<section class="section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Similar Work</span>
+            <h2 class="section-title">Related Projects</h2>
+        </div>
+        
+        <div class="row g-4">
+            {% for related in related_projects %}
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <article class="project-card">
+                        {% if related.image %}
+                            <div class="project-image">
+                                <img src="{{ related.image.url }}" alt="{{ related.name }}" class="img-fluid">
+                                <div class="project-overlay">
+                                    <a href="{% url 'projects:detail' related.slug %}" class="btn btn-light btn-sm">
+                                        <i class="fas fa-eye me-2"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="project-image-placeholder">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                        {% endif %}
+                        <div class="project-content">
+                            {% if related.category %}
+                                <span class="project-category">{{ related.category.name }}</span>
+                            {% endif %}
+                            <h3 class="project-title h6">
+                                <a href="{% url 'projects:detail' related.slug %}">{{ related.name }}</a>
+                            </h3>
+                            {% if related.location %}
+                                <p class="small text-muted mb-0">
+                                    <i class="fas fa-map-marker-alt me-1"></i> {{ related.location }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Testimonials -->
+{% if testimonials %}
+<section class="section section-dark">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Client Feedback</span>
+            <h2 class="section-title text-white">What Our Clients Say</h2>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="testimonial-slider" data-aos="fade-up">
+                    {% for testimonial in testimonials %}
+                        <div class="testimonial-item">
+                            <div class="testimonial-card">
+                                <div class="testimonial-content">
+                                    <p class="testimonial-text">"{{ testimonial.message }}"</p>
+                                    <div class="testimonial-author">
+                                        {% if testimonial.image %}
+                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.name }}" class="testimonial-avatar">
+                                        {% else %}
+                                            <div class="testimonial-avatar bg-accent d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="testimonial-info">
+                                            <h5>{{ testimonial.name }}</h5>
+                                            {% if testimonial.designation %}
+                                                <span>{{ testimonial.designation }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="section section-primary">
+    <div class="container text-center">
+        <h2 class="text-white mb-4" data-aos="fade-up">Start Your Next Project With Us</h2>
+        <p class="text-white-50 mb-4" data-aos="fade-up" data-aos-delay="100">
+            Get expert electrical solutions tailored to your needs
+        </p>
+        <a href="{% url 'contact:home' %}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="200">
+            <i class="fas fa-paper-plane me-2"></i> Contact Us Today
+        </a>
+    </div>
+</section>
+{% endblock %}

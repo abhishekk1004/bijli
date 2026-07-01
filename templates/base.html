@@ -3,27 +3,74 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    
+    {% block meta %}{% endblock %}
+    
+    <title>{% block title %}{{ company.company_name|default:"CTS" }}{% endblock %}</title>
+    
 
-    <title>{% block title %}CTS{% endblock %}</title>
+    {% if company.favicon %}
+    <link rel="icon" type="image/x-icon" href="{{ company.favicon.url }}">
+    {% endif %}
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
+    
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader">
+            <div class="spinner"></div>
+        </div>
+    </div>
 
+    <!-- Navigation -->
     {% include 'includes/navbar.html' %}
 
-    {% block content %}
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 
-    {% endblock %}
-
+    <!-- Footer -->
     {% include 'includes/footer.html' %}
 
-    <script src="{% static 'js/main.js' %}"></script>
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
+    <!-- WhatsApp Button -->
+    {% if company.phone %}
+    <a href="https://wa.me/{{ company.phone|cut:' ' }}" target="_blank" class="whatsapp-btn" aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+    {% endif %}
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

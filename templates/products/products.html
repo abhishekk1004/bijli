@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Products - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">Our Products</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Products</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="section">
+    <div class="container">
+        {% if current_category %}
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-subtitle">{{ current_category.name }}</span>
+                <h2 class="section-title">{{ current_category.name }} Products</h2>
+                <p class="section-description">Browse our {{ current_category.name|lower }} product range</p>
+            </div>
+        {% else %}
+            <div class="section-header" data-aos="fade-up">
+                <span class="section-subtitle">Quality Products</span>
+                <h2 class="section-title">Our Products</h2>
+                <p class="section-description">Premium electrical, solar, and telecom products for your needs</p>
+            </div>
+        {% endif %}
+        
+        <!-- Category Filter -->
+        {% if categories %}
+            <div class="category-filter mb-5" data-aos="fade-up">
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a href="{% url 'products:home' %}" class="btn {% if not current_category %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        All Products
+                    </a>
+                    {% for category in categories %}
+                        <a href="{% url 'products:category' category.slug %}" 
+                           class="btn {% if current_category.slug == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            {{ category.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="row g-4">
+            {% for product in products %}
+                <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="card product-card h-100">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                            <div class="product-image-placeholder">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            {% if product.category %}
+                                <span class="badge bg-primary mb-2">{{ product.category.name }}</span>
+                            {% endif %}
+                            <h3 class="card-title h6">{{ product.name }}</h3>
+                            <p class="card-text small text-muted">{{ product.description|truncatewords:10 }}</p>
+                            {% if product.price %}
+                                <p class="price-tag mb-3">₹{{ product.price }}</p>
+                            {% endif %}
+                            <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-primary btn-sm w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Products coming soon. Please check back later.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section section-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="feature-box text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h4>Quality Certified</h4>
+                    <p>All products are BIS certified and meet international quality standards</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-box text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h4>Fast Delivery</h4>
+                    <p>Quick and reliable delivery across India with tracking support</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-box text-center">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4>24/7 Support</h4>
+                    <p>Round-the-clock customer support for all your queries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="text-white mb-3">Looking for Bulk Orders?</h2>
+                <p class="text-white-50 mb-0">We offer special pricing for bulk orders and project requirements. Contact us for a customized quote.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0" data-aos="fade-up" data-aos-delay="100">
+                <a href="{% url 'contact:home' %}" class="btn btn-accent btn-lg">
+                    <i class="fas fa-envelope me-2"></i> Request Quote
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-slider">
+        {% if hero_slides %}
+            {% for slide in hero_slides %}
+                <div class="hero-slide" style="background-image: url('{{ slide.image.url }}');">
+                    <div class="container">
+                        <div class="hero-content" data-aos="fade-up">
+                            <span class="hero-subtitle">{{ slide.subtitle }}</span>
+                            <h1 class="hero-title">{{ slide.title }}</h1>
+                            <p class="hero-description">{{ slide.description }}</p>
+                            <div class="hero-cta">
+                                {% if slide.button_text %}
+                                    <a href="{{ slide.button_url }}" class="btn btn-accent btn-lg">
+                                        {{ slide.button_text }}
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'contact:home' %}" class="btn btn-outline-light btn-lg">
+                                    Get Free Quote
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="hero-slide" style="background-image: url('{% static 'images/default-hero.jpg' %}');">
+                <div class="container">
+                    <div class="hero-content" data-aos="fade-up">
+                        <span class="hero-subtitle">Welcome to Celltronic Tele Solutions</span>
+                        <h1 class="hero-title">Your Trusted Partner for Electrical & Telecom Solutions</h1>
+                        <p class="hero-description">We provide comprehensive electrical contracting, telecom infrastructure, and solar energy solutions for residential, commercial, and industrial projects.</p>
+                        <div class="hero-cta">
+                            <a href="{% url 'services:home' %}" class="btn btn-accent btn-lg">
+                                Our Services <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <a href="{% url 'contact:home' %}" class="btn btn-outline-light btn-lg">
+                                Get Free Quote
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Slider Navigation -->
+        <div class="hero-nav"></div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="section" id="services">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">What We Offer</span>
+            <h2 class="section-title">Our Services</h2>
+            <p class="section-description">Comprehensive solutions for all your electrical, telecom, and solar energy needs</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for service in services %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="card service-card h-100">
+                        {% if service.icon %}
+                            <div class="service-icon">
+                                <i class="{{ service.icon }}"></i>
+                            </div>
+                        {% else %}
+                            <div class="service-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                        {% endif %}
+                        <h3 class="card-title">{{ service.name }}</h3>
+                        <p class="card-text">{{ service.description|truncatewords:20 }}</p>
+                        <a href="{% url 'services:detail' service.slug %}" class="btn btn-outline-primary mt-3">
+                            Learn More <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">Services coming soon...</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'services:home' %}" class="btn btn-primary btn-lg">
+                View All Services <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="section section-light" id="products">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Our Products</span>
+            <h2 class="section-title">Featured Products</h2>
+            <p class="section-description">Quality electrical and telecom products for your projects</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for product in products %}
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="card product-card h-100">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default-product.jpg' %}" class="card-img" alt="{{ product.name }}">
+                        {% endif %}
+                        {% if product.category %}
+                            <span class="product-badge">{{ product.category.name }}</span>
+                        {% endif %}
+                        <div class="card-body">
+                            <h4 class="card-title">{{ product.name }}</h4>
+                            <p class="card-text">{{ product.description|truncatewords:15 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if product.price %}
+                                    <span class="h5 text-primary mb-0">₹{{ product.price }}</span>
+                                {% endif %}
+                                <a href="{% url 'products:detail' product.slug %}" class="btn btn-sm btn-primary">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">Products coming soon...</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'products:home' %}" class="btn btn-primary btn-lg">
+                View All Products <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Clients Section -->
+{% if clients %}
+<section class="clients-section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Our Clients</span>
+            <h2 class="section-title">Trusted By</h2>
+        </div>
+        
+        <div class="row g-4 align-items-center justify-content-center">
+            {% for client in clients %}
+                <div class="col-lg-2 col-md-3 col-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="text-center">
+                        {% if client.logo %}
+                            <img src="{{ client.logo.url }}" alt="{{ client.name }}" class="client-logo img-fluid">
+                        {% else %}
+                            <h5 class="text-primary">{{ client.name }}</h5>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="500">0</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="150">0</div>
+                    <div class="stat-label">Happy Clients</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="50">0</div>
+                    <div class="stat-label">Team Members</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-item">
+                    <div class="stat-number" data-target="15">0</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+{% if testimonials %}
+<section class="section" id="testimonials">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Testimonials</span>
+            <h2 class="section-title">What Our Clients Say</h2>
+            <p class="section-description">Hear from our satisfied customers about their experience with us</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="testimonial-slider" data-aos="fade-up">
+                    {% for testimonial in testimonials %}
+                        <div class="testimonial-item">
+                            <div class="testimonial-card">
+                                <div class="testimonial-content">
+                                    <div class="testimonial-rating mb-3">
+                                        {% for i in "12345" %}
+                                            <i class="fas fa-star{% if forloop.counter > testimonial.rating %}-half-alt{% endif %}"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <p class="testimonial-text">"{{ testimonial.message }}"</p>
+                                    <div class="testimonial-author">
+                                        {% if testimonial.image %}
+                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.name }}" class="testimonial-avatar">
+                                        {% else %}
+                                            <div class="testimonial-avatar bg-primary d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user text-white"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="testimonial-info">
+                                            <h5>{{ testimonial.name }}</h5>
+                                            {% if testimonial.designation %}
+                                                <span>{{ testimonial.designation }}{% if testimonial.company %}, {{ testimonial.company }}{% endif %}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="text-white mb-3">Ready to Start Your Project?</h2>
+                <p class="text-white-50 mb-0">Contact us today for a free consultation and quote. Our team of experts is ready to help you with your electrical, telecom, or solar energy needs.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0" data-aos="fade-up" data-aos-delay="100">
+                <a href="{% url 'contact:home' %}" class="btn btn-accent btn-lg me-3 mb-2">
+                    <i class="fas fa-envelope me-2"></i> Contact Us
+                </a>
+                <a href="tel:+919876543210" class="btn btn-outline-light btn-lg mb-2">
+                    <i class="fas fa-phone me-2"></i> Call Now
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
