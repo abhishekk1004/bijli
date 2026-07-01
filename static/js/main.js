@@ -1,100 +1,138 @@
 /**
  * CTS - Celltronic Tele Solutions
- * Main JavaScript File
+ * Main JavaScript - Production Ready
+ * 
+ * Dependencies: jQuery 3.7+, AOS, Slick Carousel, Bootstrap 5
  */
 
 (function($) {
     'use strict';
 
     // ==========================================
-    // 1. Preloader
+    // Configuration & Constants
     // ==========================================
-    $(window).on('load', function() {
-        $('#preloader').fadeOut('slow', function() {
-            $(this).remove();
+    const CONFIG = {
+        slider: {
+            autoPlayDelay: 5000,
+            carouselSpeed: 2000
+        },
+        animation: {
+            duration: 800,
+            counterDuration: 2000,
+            scrollOffset: 80
+        },
+        scroll: {
+            navbarThreshold: 50,
+            backToTopThreshold: 300
+        }
+    };
+
+    // ==========================================
+    // CSRF Token Handler (Django)
+    // ==========================================
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    function ajaxSetup() {
+        $.ajaxSetup({
+            headers: { 'X-CSRFToken': csrfToken },
+            error: function(xhr) {
+                console.error('AJAX Error:', xhr.status, xhr.statusText);
+            }
         });
-    });
+    }
 
     // ==========================================
-    // 2. Initialize AOS Animation
+    // Preloader
     // ==========================================
-    AOS.init({
-        duration: 800,
-        easing: 'ease-in-out',
-        once: true,
-        offset: 100
-    });
+    function initPreloader() {
+        $(window).on('load', function() {
+            $('#preloader').fadeOut('slow', function() {
+                $(this).remove();
+            });
+        });
+    }
 
     // ==========================================
-    // 3. Navbar Scroll Effect
+    // AOS Animations
     // ==========================================
-    $(window).scroll(function() {
-        if ($(this).scrollTop() > 50) {
-            $('#main-navbar').addClass('scrolled');
-        } else {
-            $('#main-navbar').removeClass('scrolled');
+    function initAOS() {
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: CONFIG.animation.duration,
+                easing: 'ease-in-out',
+                once: true,
+                offset: 100
+            });
         }
-    });
+    }
 
     // ==========================================
-    // 4. Smooth Scroll
+    // Navbar Scroll Effect
     // ==========================================
-    $('a[href^="#"]').on('click', function(e) {
-        var target = $(this.getAttribute('href'));
-        if (target.length) {
+    function initNavbarScroll() {
+        const $window = $(window);
+        const $navbar = $('#main-navbar');
+
+        $window.on('scroll', function() {
+            $navbar.toggleClass('scrolled', $window.scrollTop() > CONFIG.scroll.navbarThreshold);
+        });
+    }
+
+    // ==========================================
+    // Smooth Scroll
+    // ==========================================
+    function initSmoothScroll() {
+        $('a[href^="#"]').on('click', function(e) {
+            const $target = $($(this).attr('href'));
+            if ($target.length) {
+                e.preventDefault();
+                $('html, body').stop().animate({
+                    scrollTop: $target.offset().top - CONFIG.animation.scrollOffset
+                }, CONFIG.animation.duration);
+            }
+        });
+    }
+
+    // ==========================================
+    // Back to Top Button
+    // ==========================================
+    function initBackToTop() {
+        const $window = $(window);
+        const $btn = $('#back-to-top');
+
+        $window.on('scroll', function() {
+            $btn.toggleClass('show', $window.scrollTop() > CONFIG.scroll.backToTopThreshold);
+        });
+
+        $btn.on('click', function(e) {
             e.preventDefault();
-            var offset = 80; // Account for fixed navbar
-            $('html, body').stop().animate({
-                scrollTop: target.offset().top - offset
-            }, 800, 'swing');
-        }
-    });
+            $('html, body').animate({ scrollTop: 0 }, CONFIG.animation.duration);
+        });
+    }
 
     // ==========================================
-    // 5. Back to Top Button
+    // Hero Slider
     // ==========================================
-    $(window).scroll(function() {
-        if ($(this).scrollTop() > 300) {
-            $('#back-to-top').addClass('show');
-        } else {
-            $('#back-to-top').removeClass('show');
-        }
-    });
+    function initHeroSlider() {
+        const $slider = $('.hero-slider');
+        if (!$slider.length) return;
 
-    $('#back-to-top').on('click', function(e) {
-        e.preventDefault();
-        $('html, body').animate({ scrollTop: 0 }, 800);
-        return false;
-    });
-
-    // ==========================================
-    // 6. Hero Slider
-    // ==========================================
-    if ($('.hero-slider').length) {
-        var $slider = $('.hero-slider');
-        var $slides = $slider.find('.hero-slide');
-        var $nav = $slider.find('.hero-nav');
-        var currentSlide = 0;
-        var slideInterval;
+        const $slides = $slider.find('.hero-slide');
+        const $nav = $slider.find('.hero-nav');
+        let currentSlide = 0;
+        let slideInterval;
 
         function showSlide(index) {
             $slides.removeClass('active').fadeOut(0);
             $nav.find('.hero-dot').removeClass('active');
-            
-            currentSlide = index;
-            if (currentSlide >= $slides.length) currentSlide = 0;
-            if (currentSlide < 0) currentSlide = $slides.length - 1;
-            
-            $($slides[currentSlide]).addClass('active').fadeIn(500);
-            $($nav.find('.hero-dot')[currentSlide]).addClass('active');
-        }
 
-        function nextSlide() {
-            showSlide(currentSlide + 1);
+            currentSlide = ((index % $slides.length) + $slides.length) % $slides.length;
+            $slides.eq(currentSlide).addClass('active').fadeIn(500);
+            $nav.find('.hero-dot').eq(currentSlide).addClass('active');
         }
 
         function startSlider() {
-            slideInterval = setInterval(nextSlide, 5000);
+            slideInterval = setInterval(() => showSlide(currentSlide + 1), CONFIG.slider.autoPlayDelay);
         }
 
         function stopSlider() {
@@ -102,120 +140,105 @@
         }
 
         // Create navigation dots
-        $slides.each(function(index) {
-            $nav.append('<span class="hero-dot' + (index === 0 ? ' active' : '') + '" data-slide="' + index + '"></span>');
+        $slides.each(function(i) {
+            $nav.append(`<span class="hero-dot${i === 0 ? ' active' : ''}" data-slide="${i}"></span>`);
         });
 
-        // Dot click handler
         $nav.on('click', '.hero-dot', function() {
             stopSlider();
             showSlide($(this).data('slide'));
             startSlider();
         });
 
-        // Start slider
+        $slider.on('mouseenter', stopSlider).on('mouseleave', startSlider);
+
         showSlide(0);
         startSlider();
-
-        // Pause on hover
-        $slider.on('mouseenter', stopSlider);
-        $slider.on('mouseleave', startSlider);
     }
 
     // ==========================================
-    // 7. Client Logo Carousel
+    // Slick Carousels
     // ==========================================
-    if ($('.clients-carousel').length) {
-        $('.clients-carousel').slick({
-            slidesToShow: 5,
-            slidesToScroll: 1,
+    function initCarousels() {
+        const slickDefaults = {
             autoplay: true,
-            autoplaySpeed: 2000,
-            arrows: false,
-            dots: false,
             pauseOnHover: true,
             responsive: [
-                {
-                    breakpoint: 992,
-                    settings: {
-                        slidesToShow: 4
-                    }
-                },
-                {
-                    breakpoint: 768,
-                    settings: {
-                        slidesToShow: 3
-                    }
-                },
-                {
-                    breakpoint: 576,
-                    settings: {
-                        slidesToShow: 2
-                    }
-                }
+                { breakpoint: 992, settings: { slidesToShow: 4 } },
+                { breakpoint: 768, settings: { slidesToShow: 3 } },
+                { breakpoint: 576, settings: { slidesToShow: 2 } }
             ]
-        });
-    }
+        };
 
-    // ==========================================
-    // 8. Testimonial Slider
-    // ==========================================
-    if ($('.testimonial-slider').length) {
-        $('.testimonial-slider').slick({
-            slidesToShow: 1,
-            slidesToScroll: 1,
-            autoplay: true,
-            autoplaySpeed: 5000,
-            arrows: true,
-            dots: true,
-            prevArrow: '<button type="button" class="slick-prev"><i class="fas fa-arrow-left"></i></button>',
-            nextArrow: '<button type="button" class="slick-next"><i class="fas fa-arrow-right"></i></button>'
-        });
-    }
+        if ($('.clients-carousel').length) {
+            $('.clients-carousel').slick($.extend({}, slickDefaults, {
+                slidesToShow: 5,
+                slidesToScroll: 1,
+                autoplaySpeed: CONFIG.slider.carouselSpeed,
+                arrows: false,
+                dots: false
+            }));
+        }
 
-    // ==========================================
-    // 9. Counter Animation
-    // ==========================================
-    function animateCounter($counter) {
-        var target = parseInt($counter.data('target'));
-        var duration = 2000;
-        var step = target / (duration / 16);
-        var current = 0;
-        
-        var timer = setInterval(function() {
-            current += step;
-            if (current >= target) {
-                $counter.text(target);
-                clearInterval(timer);
-            } else {
-                $counter.text(Math.floor(current));
-            }
-        }, 16);
-    }
-
-    $('.counter').each(function() {
-        var $counter = $(this);
-        var observer = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    animateCounter($counter);
-                    observer.unobserve(entry.target);
-                }
+        if ($('.testimonial-slider').length) {
+            $('.testimonial-slider').slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                autoplay: true,
+                autoplaySpeed: CONFIG.slider.autoPlayDelay,
+                arrows: true,
+                dots: true,
+                prevArrow: '<button type="button" class="slick-prev"><i class="fas fa-arrow-left"></i></button>',
+                nextArrow: '<button type="button" class="slick-next"><i class="fas fa-arrow-right"></i></button>'
             });
-        }, { threshold: 0.5 });
-        
-        observer.observe(this);
-    });
+        }
+    }
 
     // ==========================================
-    // 10. Form Validation
+    // Counter Animation
     // ==========================================
-    (function() {
-        'use strict';
-        
-        var forms = document.querySelectorAll('.needs-validation');
-        
-        Array.prototype.slice.call(forms).forEach(function(form) {
+    function initCounters() {
+        if (!('IntersectionObserver' in window)) return;
+
+        function animateCounter($counter) {
+            const target = parseInt($counter.data('target'), 10);
+            const duration = CONFIG.animation.counterDuration;
+            const step = target / (duration / 16);
+            let current = 0;
+
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    $counter.text(target);
+                    clearInterval(timer);
+                } else {
+                    $counter.text(Math.floor(current));
+                }
+            }, 16);
+        }
+
+        $('.counter').each(function() {
+            const $counter = $(this);
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter($counter);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(this);
+        });
+    }
+
+    // ==========================================
+    // Form Validation (Bootstrap 5)
+    // ==========================================
+    function initFormValidation() {
+        const forms = document.querySelectorAll('.needs-validation');
+
+        forms.forEach(form => {
             form.addEventListener('submit', function(event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
@@ -224,113 +247,158 @@
                 form.classList.add('was-validated');
             }, false);
         });
-    })();
+    }
 
     // ==========================================
-    // 11. Contact Form Submission
+    // Contact Form Handler
     // ==========================================
-    $('#contactForm, #inquiryForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        var $form = $(this);
-        var $submitBtn = $form.find('button[type="submit"]');
-        var originalText = $submitBtn.html();
-        
-        // Show loading state
-        $submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Sending...').prop('disabled', true);
-        
-        $.ajax({
-            url: $form.attr('action'),
-            method: 'POST',
-            data: $form.serialize(),
-            success: function(response) {
-                $form[0].reset();
-                $form.find('.alert').remove();
-                $form.prepend('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                    '<i class="fas fa-check-circle me-2"></i>' +
-                    'Thank you! Your message has been sent successfully.' +
-                    '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                    '</div>');
-            },
-            error: function() {
-                $form.find('.alert').remove();
-                $form.prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                    '<i class="fas fa-exclamation-circle me-2"></i>' +
-                    'Sorry, there was an error. Please try again later.' +
-                    '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                    '</div>');
-            },
-            complete: function() {
-                $submitBtn.html(originalText).prop('disabled', false);
-            }
-        });
-    });
+    function initContactForm() {
+        $('#contactForm, #inquiryForm').on('submit', function(e) {
+            e.preventDefault();
 
-    // ==========================================
-    // 12. Lazy Load Images
-    // ==========================================
-    if ('IntersectionObserver' in window) {
-        var lazyImages = document.querySelectorAll('img[data-src]');
-        
-        var imageObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    var img = entry.target;
-                    img.src = img.dataset.src;
-                    img.removeAttribute('data-src');
-                    imageObserver.unobserve(img);
+            const $form = $(this);
+            const $btn = $form.find('button[type="submit"]');
+            const originalText = $btn.html();
+
+            $btn.prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm me-2"></span>Sending...'
+            );
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize(),
+                success: function() {
+                    $form[0].reset();
+                    showAlert($form, 'success', 
+                        '<i class="fas fa-check-circle me-2"></i>Thank you! Your message has been sent successfully.'
+                    );
+                },
+                error: function() {
+                    showAlert($form, 'danger',
+                        '<i class="fas fa-exclamation-circle me-2"></i>Sorry, there was an error. Please try again later.'
+                    );
+                },
+                complete: function() {
+                    $btn.html(originalText).prop('disabled', false);
                 }
             });
-        });
-        
-        lazyImages.forEach(function(img) {
-            imageObserver.observe(img);
         });
     }
 
     // ==========================================
-    // 13. Active Nav Link
+    // Newsletter Form Handler
     // ==========================================
-    var currentPath = window.location.pathname;
-    $('.navbar-nav .nav-link').each(function() {
-        var $link = $(this);
-        var href = $link.attr('href');
-        
-        if (currentPath === href || currentPath.indexOf(href) !== -1) {
-            $link.addClass('active');
-        }
-    });
+    function initNewsletterForm() {
+        $('#newsletterForm').on('submit', function(e) {
+            e.preventDefault();
 
-    // ==========================================
-    // 14. Close Mobile Menu on Click
-    // ==========================================
-    $('.navbar-nav .nav-link').on('click', function() {
-        if ($('.navbar-collapse').hasClass('show')) {
-            $('.navbar-toggler').trigger('click');
-        }
-    });
+            const $form = $(this);
+            const $email = $form.find('input[type="email"]');
+            const email = $email.val().trim();
 
-    // ==========================================
-    // 15. Newsletter Form
-    // ==========================================
-    $('#newsletterForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        var $form = $(this);
-        var $email = $form.find('input[type="email"]');
-        
-        $.ajax({
-            url: $form.attr('action'),
-            method: 'POST',
-            data: { email: $email.val() },
-            success: function() {
-                $email.val('');
-                alert('Thank you for subscribing!');
-            },
-            error: function() {
+            if (!isValidEmail(email)) {
                 alert('Please enter a valid email address.');
+                return;
+            }
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: { email: email },
+                success: function() {
+                    $email.val('');
+                    alert('Thank you for subscribing!');
+                },
+                error: function() {
+                    alert('Please enter a valid email address.');
+                }
+            });
+        });
+    }
+
+    // ==========================================
+    // Lazy Load Images
+    // ==========================================
+    function initLazyLoad() {
+        if (!('IntersectionObserver' in window)) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+    }
+
+    // ==========================================
+    // Active Nav Link
+    // ==========================================
+    function initActiveNav() {
+        const currentPath = window.location.pathname;
+
+        $('.navbar-nav .nav-link').each(function() {
+            const href = $(this).attr('href');
+            if (currentPath === href || (href !== '#' && currentPath.includes(href))) {
+                $(this).addClass('active');
             }
         });
+    }
+
+    // ==========================================
+    // Mobile Menu Close
+    // ==========================================
+    function initMobileMenu() {
+        $('.navbar-nav .nav-link').on('click', function() {
+            const $collapse = $('.navbar-collapse');
+            if ($collapse.hasClass('show')) {
+                $('.navbar-toggler').trigger('click');
+            }
+        });
+    }
+
+    // ==========================================
+    // Utility Functions
+    // ==========================================
+    function showAlert($form, type, message) {
+        $form.find('.alert').remove();
+        $form.prepend(
+            `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`
+        );
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // ==========================================
+    // Initialize All Modules
+    // ==========================================
+    $(document).ready(function() {
+        ajaxSetup();
+        initPreloader();
+        initAOS();
+        initNavbarScroll();
+        initSmoothScroll();
+        initBackToTop();
+        initHeroSlider();
+        initCarousels();
+        initCounters();
+        initFormValidation();
+        initContactForm();
+        initNewsletterForm();
+        initLazyLoad();
+        initActiveNav();
+        initMobileMenu();
     });
 
 })(jQuery);

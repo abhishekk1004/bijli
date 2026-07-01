@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView, ListView, DetailView
 
-from apps.services.models import Service
+from apps.services.models import Service, ServiceCategory
 from apps.core.models import Testimonial
 
 

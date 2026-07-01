@@ -40,12 +40,20 @@ class Product(ActiveModel, SlugModel, OrderableModel):
     def __str__(self):
         return self.name
     
-    def get_features_list(self):
+    @property
+    def features_list(self):
         if self.features:
-            return [f.strip() for f in self.features.split(',')]
+            return [f.strip() for f in self.features.split(',') if f.strip()]
         return []
     
-    def get_specifications_list(self):
+    @property
+    def specifications_list(self):
         if self.specifications:
-            return [s.strip() for s in self.specifications.split(',')]
+            return [s.strip() for s in self.specifications.split(',') if s.strip()]
         return []
+    
+    def get_features_list(self):
+        return self.features_list
+    
+    def get_specifications_list(self):
+        return self.specifications_list

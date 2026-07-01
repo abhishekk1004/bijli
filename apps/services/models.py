@@ -3,6 +3,22 @@ from apps.common.models import ActiveModel, SlugModel, OrderableModel
 from apps.common.utils import upload_to
 
 
+class ServiceCategory(ActiveModel, SlugModel, OrderableModel):
+    """Service category model."""
+    
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, blank=True)
+    
+    class Meta:
+        verbose_name = 'Service Category'
+        verbose_name_plural = 'Service Categories'
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
 class Service(ActiveModel, SlugModel, OrderableModel):
     """Service model."""
     

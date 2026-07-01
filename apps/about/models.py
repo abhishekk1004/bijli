@@ -1,4 +1,64 @@
 from django.db import models
+from apps.core.models import SlugModel
+
+
+class About(SlugModel):
+    """Model for about page content"""
+    title = models.CharField(max_length=500)
+    description = models.TextField(blank=True)
+    content = models.TextField(blank=True)
+    mission = models.TextField(blank=True)
+    vision = models.TextField(blank=True)
+    image = models.ImageField(upload_to='about/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'About'
+        verbose_name_plural = 'About'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class Milestone(models.Model):
+    """Model for company milestones"""
+    year = models.CharField(max_length=10)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Milestone'
+        verbose_name_plural = 'Milestones'
+        ordering = ['order', 'year']
+
+    def __str__(self):
+        return f"{self.year} - {self.title}"
+
+
+class Stat(models.Model):
+    """Model for statistics/numbers"""
+    number = models.CharField(max_length=20)
+    label = models.CharField(max_length=100)
+    icon = models.CharField(max_length=50, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Stat'
+        verbose_name_plural = 'Stats'
+        ordering = ['order', 'label']
+
+    def __str__(self):
+        return f"{self.number} - {self.label}"
 
 
 class TeamMember(models.Model):

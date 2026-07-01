@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView, ListView
 
-from apps.about.models import TeamMember, FAQ
+from apps.about.models import About, Milestone, Stat, TeamMember, FAQ
 from apps.services.models import Service
 from apps.products.models import Product
 from apps.projects.models import Project
@@ -14,13 +14,16 @@ class AboutView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Team members
+        # About content
+        context['about'] = About.objects.filter(is_active=True).first()
+        context['milestones'] = Milestone.objects.filter(is_active=True)
+        context['stats'] = Stat.objects.filter(is_active=True)
         context['team_members'] = TeamMember.objects.filter(is_active=True)
         
-        # Stats
+        # Counts
         context['services_count'] = Service.objects.filter(is_active=True).count()
         context['products_count'] = Product.objects.filter(is_active=True).count()
-        context['projects_count'] = Project.objects.count()
+        context['projects_count'] = Project.objects.filter(is_active=True).count()
         context['team_count'] = TeamMember.objects.filter(is_active=True).count()
         
         return context

@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls import handler404, handler500, handler403
+from apps.core.views import handler404, handler500, handler403
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,3 +30,7 @@ urlpatterns = [
     path('projects/', include('apps.projects.urls', namespace='projects')),
     path('contact/', include('apps.contact.urls', namespace='contact')),
 ]
+
+handler404 = handler404
+handler500 = handler500
+handler403 = handler403
