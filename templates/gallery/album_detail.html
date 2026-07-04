@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static common_tags %}
+
+{% block title %}{{ album.title }} - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">{{ album.title }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'gallery:home' %}">Gallery</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">{{ album.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Album Images -->
+<section class="section">
+    <div class="container">
+        {% if album.description %}
+            <p class="lead text-muted mb-5 text-center" data-aos="fade-up">{{ album.description }}</p>
+        {% endif %}
+
+        {% if album.images.all %}
+            <div class="row g-3">
+                {% for image in album.images.all %}
+                    <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'50' }}">
+                        {% if image.image %}
+                            <a href="{{ image.image.url }}" target="_blank" rel="noopener noreferrer">
+                                <img src="{% webp_thumb image %}" alt="{{ image.caption|default:album.title }}" class="img-fluid rounded shadow-sm" loading="lazy">
+                            </a>
+                        {% endif %}
+                        {% if image.caption %}<p class="small text-muted mt-1 mb-0">{{ image.caption }}</p>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if album.videos.all %}
+            <div class="section-header mt-5" data-aos="fade-up">
+                <h3 class="section-title h4">Videos</h3>
+            </div>
+            <div class="row g-4">
+                {% for video in album.videos.all %}
+                    <div class="col-lg-6" data-aos="fade-up">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="{{ video.video_url }}" title="{{ video.title }}" allowfullscreen loading="lazy"></iframe>
+                        </div>
+                        <p class="mt-2 mb-0">{{ video.title }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if not album.images.all and not album.videos.all %}
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>
+                This album doesn't have any media yet.
+            </div>
+        {% endif %}
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'gallery:home' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Gallery
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

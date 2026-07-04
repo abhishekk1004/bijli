@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}{{ service.name }} - {{ company.company_name }}{% endblock %}
 
@@ -28,18 +28,12 @@
             <!-- Main Content -->
             <div class="col-lg-8">
                 {% if service.image %}
-                    <img src="{{ service.image.url }}" alt="{{ service.name }}" class="img-fluid rounded shadow mb-4">
+                    <img src="{% webp_image service %}" alt="{{ service.name }}" class="img-fluid rounded shadow mb-4" loading="lazy">
                 {% endif %}
                 
                 <h2 class="mb-4">Service Overview</h2>
                 <p class="lead mb-4">{{ service.description }}</p>
-                
-                {% if service.content %}
-                    <div class="mb-4">
-                        {{ service.content|linebreaks }}
-                    </div>
-                {% endif %}
-                
+
                 {% if service.features %}
                     <h3 class="h4 mb-3">What's Included</h3>
                     <div class="row g-3 mb-4">
@@ -54,19 +48,6 @@
                     </div>
                 {% endif %}
                 
-                {% if service.benefits %}
-                    <h3 class="h4 mb-3">Benefits</h3>
-                    <div class="row g-3 mb-4">
-                        {% for benefit in service.benefits_list %}
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-start">
-                                    <i class="fas fa-star text-accent me-3 mt-1"></i>
-                                    <span>{{ benefit }}</span>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
             </div>
             
             <!-- Sidebar -->
@@ -75,11 +56,12 @@
                 <div class="card border-0 shadow mb-4" data-aos="fade-left">
                     <div class="card-body p-4">
                         <h4 class="card-title mb-4">Get a Free Quote</h4>
-                        <form id="quoteForm" method="post" action="{% url 'contact:home' %}">
+                        <form id="quoteForm" method="post" action="{% url 'contact:submit' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="service" value="{{ service.name }}">
+                            <input type="hidden" name="service_interest" value="{{ service.name }}">
+                            <input type="hidden" name="subject" value="Quote Request: {{ service.name }}">
                             <div class="mb-3">
-                                <input type="text" name="name" class="form-control" placeholder="Your Name" required>
+                                <input type="text" name="name" class="form-control" placeholder="Your Name" required minlength="2">
                             </div>
                             <div class="mb-3">
                                 <input type="tel" name="phone" class="form-control" placeholder="Phone Number" required>
@@ -88,7 +70,7 @@
                                 <input type="email" name="email" class="form-control" placeholder="Email Address" required>
                             </div>
                             <div class="mb-3">
-                                <textarea name="message" class="form-control" rows="3" placeholder="Tell us about your requirements..."></textarea>
+                                <textarea name="message" class="form-control" rows="3" placeholder="Tell us about your requirements..." required minlength="10"></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-paper-plane me-2"></i> Request Quote
@@ -108,18 +90,6 @@
                                     <strong>Category:</strong> {{ service.category.name }}
                                 </li>
                             {% endif %}
-                            {% if service.price %}
-                                <li class="mb-3">
-                                    <i class="fas fa-tag text-primary me-3"></i>
-                                    <strong>Starting from:</strong> ₹{{ service.price }}
-                                </li>
-                            {% endif %}
-                            {% if service.duration %}
-                                <li class="mb-3">
-                                    <i class="fas fa-clock text-primary me-3"></i>
-                                    <strong>Duration:</strong> {{ service.duration }}
-                                </li>
-                            {% endif %}
                             <li class="mb-3">
                                 <i class="fas fa-check-circle text-primary me-3"></i>
                                 <strong>Warranty:</strong> Available
@@ -133,14 +103,18 @@
                     <div class="card-body p-4">
                         <h4 class="card-title mb-4">Need Help?</h4>
                         <p class="mb-3">Contact us directly for immediate assistance</p>
+                        {% if company.phone %}
                         <div class="mb-3">
                             <i class="fas fa-phone me-3"></i>
-                            <a href="tel:+919876543210" class="text-white">{{ company.phone|default:"+91 98765 43210" }}</a>
+                            <a href="tel:{{ company.phone }}" class="text-white">{{ company.phone }}</a>
                         </div>
+                        {% endif %}
+                        {% if company.email %}
                         <div class="mb-3">
                             <i class="fas fa-envelope me-3"></i>
-                            <a href="mailto:{{ company.email }}" class="text-white">{{ company.email|default:"info@celltronic.com" }}</a>
+                            <a href="mailto:{{ company.email }}" class="text-white">{{ company.email }}</a>
                         </div>
+                        {% endif %}
                         <a href="{% url 'contact:home' %}" class="btn btn-accent w-100 mt-3">
                             <i class="fas fa-comments me-2"></i> Contact Us
                         </a>
@@ -165,7 +139,7 @@
                 <div class="col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                     <div class="card service-card h-100">
                         {% if related.image %}
-                            <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.name }}">
+                            <img src="{% webp_thumb related %}" class="card-img-top" alt="{{ related.name }}" loading="lazy">
                         {% else %}
                             <div class="service-icon-lg">
                                 {% if related.icon %}
@@ -209,14 +183,14 @@
                                     <p class="testimonial-text">"{{ testimonial.message }}"</p>
                                     <div class="testimonial-author">
                                         {% if testimonial.image %}
-                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.name }}" class="testimonial-avatar">
+                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.client_name }}" class="testimonial-avatar">
                                         {% else %}
                                             <div class="testimonial-avatar bg-primary d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-user text-white"></i>
                                             </div>
                                         {% endif %}
                                         <div class="testimonial-info">
-                                            <h5>{{ testimonial.name }}</h5>
+                                            <h5>{{ testimonial.client_name }}</h5>
                                             {% if testimonial.designation %}
                                                 <span>{{ testimonial.designation }}</span>
                                             {% endif %}

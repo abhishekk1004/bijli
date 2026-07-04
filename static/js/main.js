@@ -1,8 +1,6 @@
 /**
- * CTS - Celltronic Tele Solutions
- * Main JavaScript - Production Ready
- * 
- * Dependencies: jQuery 3.7+, AOS, Slick Carousel, Bootstrap 5
+ * CTS site scripts.
+ * Requires jQuery, AOS, Slick Carousel and Bootstrap 5 (loaded in base.html).
  */
 
 (function($) {

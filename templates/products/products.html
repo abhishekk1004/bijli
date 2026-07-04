@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}Our Products - {{ company.company_name }}{% endblock %}
 
@@ -56,7 +56,7 @@
                 <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                     <div class="card product-card h-100">
                         {% if product.image %}
-                            <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            <img src="{% webp_thumb product %}" class="card-img-top" alt="{{ product.name }}" loading="lazy">
                         {% else %}
                             <div class="product-image-placeholder">
                                 <i class="fas fa-box"></i>
@@ -69,7 +69,7 @@
                             <h3 class="card-title h6">{{ product.name }}</h3>
                             <p class="card-text small text-muted">{{ product.description|truncatewords:10 }}</p>
                             {% if product.price %}
-                                <p class="price-tag mb-3">₹{{ product.price }}</p>
+                                <p class="price-tag mb-3">NPR {{ product.price }}</p>
                             {% endif %}
                             <a href="{% url 'products:detail' product.slug %}" class="btn btn-outline-primary btn-sm w-100">
                                 View Details
@@ -99,7 +99,7 @@
                         <i class="fas fa-certificate"></i>
                     </div>
                     <h4>Quality Certified</h4>
-                    <p>All products are BIS certified and meet international quality standards</p>
+                    <p>All products are certified and meet international quality standards</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
@@ -108,7 +108,7 @@
                         <i class="fas fa-truck"></i>
                     </div>
                     <h4>Fast Delivery</h4>
-                    <p>Quick and reliable delivery across India with tracking support</p>
+                    <p>Quick and reliable delivery nationwide with tracking support</p>
                 </div>
             </div>
             <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">

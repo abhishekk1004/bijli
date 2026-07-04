@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static common_tags %}
+
+{% block title %}Our Team - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">Our Team</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'about:home' %}">About Us</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Our Team</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Our People</span>
+            <h2 class="section-title">Meet Our Team</h2>
+            <p class="section-description">Dedicated professionals committed to your success</p>
+        </div>
+
+        <div class="row g-4">
+            {% for member in team_members %}
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <div class="team-card text-center">
+                        {% if member.image %}
+                            <img src="{% webp_thumb member %}" alt="{{ member.name }}" class="team-photo" loading="lazy">
+                        {% else %}
+                            <div class="team-photo bg-primary d-flex align-items-center justify-content-center mx-auto">
+                                <i class="fas fa-user text-white fa-4x"></i>
+                            </div>
+                        {% endif %}
+                        <h4 class="team-name mt-4 mb-1">{{ member.name }}</h4>
+                        <p class="team-designation text-primary mb-3">{{ member.designation }}</p>
+                        <div class="team-social">
+                            {% if member.linkedin %}
+                                <a href="{{ member.linkedin }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin-in"></i></a>
+                            {% endif %}
+                            {% if member.twitter %}
+                                <a href="{{ member.twitter }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i></a>
+                            {% endif %}
+                            {% if member.facebook %}
+                                <a href="{{ member.facebook }}" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                            {% if member.email %}
+                                <a href="mailto:{{ member.email }}"><i class="fas fa-envelope"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Team information coming soon.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DJANGO_DATABASE_NAME:-cts_db}
+      POSTGRES_USER: ${DJANGO_DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DJANGO_DATABASE_PASSWORD:?set DJANGO_DATABASE_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DJANGO_DATABASE_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_DATABASE_HOST: db
+      DJANGO_REDIS_LOCATION: redis://redis:6379/1
+      DJANGO_CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn bijli.wsgi:application --config deploy/gunicorn.conf.py"
+
+  celery:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DJANGO_DATABASE_HOST: db
+      DJANGO_REDIS_LOCATION: redis://redis:6379/1
+      DJANGO_CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: celery -A bijli worker --loglevel=info --concurrency=2
+
+volumes:
+  postgres_data:
+  media_data:

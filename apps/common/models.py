@@ -1,6 +1,24 @@
 import uuid
 
+from django.core.exceptions import ValidationError
 from django.db import models
+from imagekit import ImageSpec
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFit
+
+
+class WebPSpec(ImageSpec):
+    """Compressed WebP rendition capped at 1920px, used in place of the original upload."""
+    processors = [ResizeToFit(1920, 1920, upscale=False)]
+    format = 'WEBP'
+    options = {'quality': 82}
+
+
+class ThumbnailSpec(ImageSpec):
+    """Small WebP thumbnail for cards/grids/lazy-loaded lists."""
+    processors = [ResizeToFit(400, 400, upscale=False)]
+    format = 'WEBP'
+    options = {'quality': 75}
 
 
 class TimeStampedModel(models.Model):
@@ -64,3 +82,41 @@ class OrderableModel(models.Model):
     class Meta:
         abstract = True
         ordering = ['order']
+
+
+class WebPImageMixin(models.Model):
+    """Adds compressed WebP + thumbnail renditions derived from an `image` field."""
+
+    image_webp = ImageSpecField(source='image', spec=WebPSpec)
+    image_thumbnail = ImageSpecField(source='image', spec=ThumbnailSpec)
+
+    class Meta:
+        abstract = True
+
+
+class WebPLogoMixin(models.Model):
+    """Adds compressed WebP + thumbnail renditions derived from a `logo` field."""
+
+    logo_webp = ImageSpecField(source='logo', spec=WebPSpec)
+    logo_thumbnail = ImageSpecField(source='logo', spec=ThumbnailSpec)
+
+    class Meta:
+        abstract = True
+
+
+class SingletonModel(models.Model):
+    """Abstract mixin that restricts a model to a single database row."""
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # self.pk is unreliable here: UUID primary keys are assigned a default at
+        # instantiation time, not at save time, so it's already set on a fresh instance.
+        if self._state.adding and type(self).objects.exists():
+            raise ValidationError(f'Only one {type(self).__name__} instance is allowed.')
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        return cls.objects.first()

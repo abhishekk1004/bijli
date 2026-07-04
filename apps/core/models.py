@@ -1,14 +1,13 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-from apps.common.models import ActiveModel, SlugModel, SEOModel, OrderableModel
+from apps.common.models import ActiveModel, SlugModel, SEOModel, OrderableModel, SingletonModel, WebPImageMixin, WebPLogoMixin
 from apps.common.managers import ActiveManager
 from apps.common.utils import upload_to, generate_unique_slug
 from apps.common.choices import SocialPlatform
 
 
-class CompanyInfo(ActiveModel):
-    """Company information model."""
+class CompanyInfo(SingletonModel, ActiveModel, WebPLogoMixin):
 
     company_name = models.CharField(max_length=200)
     short_name = models.CharField(max_length=50, blank=True)
@@ -34,7 +33,6 @@ class CompanyInfo(ActiveModel):
 
 
 class SocialMedia(ActiveModel):
-    """Social media links model."""
 
     platform = models.CharField(max_length=30, choices=SocialPlatform.choices)
     url = models.URLField()
@@ -54,7 +52,6 @@ class SocialMedia(ActiveModel):
 
 
 class NavbarLink(ActiveModel, SlugModel, OrderableModel):
-    """Navigation bar links."""
 
     title = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
@@ -76,7 +73,6 @@ class NavbarLink(ActiveModel, SlugModel, OrderableModel):
 
 
 class FooterSection(OrderableModel):
-    """Footer sections with links."""
 
     title = models.CharField(max_length=100)
     column = models.PositiveIntegerField(
@@ -95,8 +91,7 @@ class FooterSection(OrderableModel):
         return self.title
 
 
-class HeroSlider(ActiveModel, OrderableModel):
-    """Hero slider for homepage."""
+class HeroSlider(ActiveModel, OrderableModel, WebPImageMixin):
 
     title = models.CharField(max_length=200)
     subtitle = models.TextField(blank=True)
@@ -117,8 +112,7 @@ class HeroSlider(ActiveModel, OrderableModel):
         return self.title
 
 
-class Client(ActiveModel, OrderableModel):
-    """Client/Partner logos."""
+class Client(ActiveModel, OrderableModel, WebPLogoMixin):
 
     name = models.CharField(max_length=200)
     logo = models.ImageField(upload_to=upload_to)
@@ -138,7 +132,6 @@ class Client(ActiveModel, OrderableModel):
 
 
 class Testimonial(ActiveModel):
-    """Client testimonials."""
 
     client_name = models.CharField(max_length=200)
     company = models.CharField(max_length=200, blank=True)
@@ -163,8 +156,7 @@ class Testimonial(ActiveModel):
         return f"{self.client_name} - {self.company}"
 
 
-class SEOSetting(SlugModel):
-    """SEO settings for pages."""
+class SEOSetting(ActiveModel, SlugModel):
 
     page_name = models.CharField(max_length=100, unique=True)
     meta_title = models.CharField(max_length=70, blank=True)

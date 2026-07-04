@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}Our Services - {{ company.company_name }}{% endblock %}
 
@@ -56,7 +56,7 @@
                 <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                     <div class="card service-card h-100">
                         {% if service.image %}
-                            <img src="{{ service.image.url }}" class="card-img-top" alt="{{ service.name }}">
+                            <img src="{% webp_thumb service %}" class="card-img-top" alt="{{ service.name }}" loading="lazy">
                         {% else %}
                             <div class="service-icon-lg">
                                 {% if service.icon %}

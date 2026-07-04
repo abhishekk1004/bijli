@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}About Us - {{ company.company_name }}{% endblock %}
 
@@ -23,9 +23,11 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-6" data-aos="fade-right">
                 {% if about.image %}
-                    <img src="{{ about.image.url }}" alt="{{ about.title }}" class="img-fluid rounded shadow">
+                    <img src="{{ about.image.url }}" alt="{{ about.title }}" class="img-fluid rounded shadow" loading="lazy">
                 {% else %}
-                    <img src="{% static 'images/about-default.jpg' %}" alt="About Us" class="img-fluid rounded shadow">
+                    <div class="product-image-placeholder-lg">
+                        <i class="fas fa-building"></i>
+                    </div>
                 {% endif %}
             </div>
             <div class="col-lg-6" data-aos="fade-left">
@@ -161,7 +163,7 @@
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                     <div class="team-card text-center">
                         {% if member.image %}
-                            <img src="{{ member.image.url }}" alt="{{ member.name }}" class="team-photo">
+                            <img src="{% webp_thumb member %}" alt="{{ member.name }}" class="team-photo" loading="lazy">
                         {% else %}
                             <div class="team-photo bg-primary d-flex align-items-center justify-content-center mx-auto">
                                 <i class="fas fa-user text-white fa-4x"></i>

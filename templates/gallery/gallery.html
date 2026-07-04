@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static common_tags %}
+
+{% block title %}Gallery - {{ company.company_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1 class="text-white">Gallery</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Gallery</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Albums Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header" data-aos="fade-up">
+            <span class="section-subtitle">Our Work</span>
+            <h2 class="section-title">Photo &amp; Video Albums</h2>
+        </div>
+
+        <div class="row g-4">
+            {% for album in albums %}
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
+                    <a href="{% url 'gallery:album' album.slug %}" class="text-decoration-none">
+                        <div class="card h-100">
+                            {% if album.cover_image %}
+                                <img src="{% webp_thumb album 'cover_image' %}" class="card-img-top" alt="{{ album.title }}" loading="lazy">
+                            {% else %}
+                                <div class="product-image-placeholder">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h3 class="card-title h5">{{ album.title }}</h3>
+                                <p class="card-text text-muted">{{ album.description|truncatewords:15 }}</p>
+                                <span class="text-primary">
+                                    {{ album.image_count }} photo{{ album.image_count|pluralize }}
+                                    {% if album.video_count %} &middot; {{ album.video_count }} video{{ album.video_count|pluralize }}{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No albums published yet. Please check back later.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

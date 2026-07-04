@@ -1,4 +1,4 @@
-{% load static %}
+{% load static common_tags %}
 <!-- Footer -->
 <footer class="footer bg-dark text-white">
     <!-- Main Footer -->
@@ -10,18 +10,18 @@
                     <div class="footer-widget">
                         <div class="footer-brand mb-3">
                             {% if company.logo %}
-                            <img src="{{ company.logo.url }}" alt="{{ company.company_name }}" class="footer-logo">
+                            <img src="{% webp_thumb company 'logo' %}" alt="{{ company.company_name }}" class="footer-logo">
                             {% else %}
                             <h4 class="text-white">{{ company.company_name|default:"CTS" }}</h4>
                             {% endif %}
                         </div>
-                        <p class="footer-about">{{ company.description|default:"Celltronic Tele Solutions - Your trusted partner for innovative solutions." }}</p>
-                        
+                        <p class="footer-about">{{ company.tagline|default:"Celltronic Tele Solutions - Your trusted partner for innovative solutions." }}</p>
+
                         <!-- Social Links -->
                         <div class="footer-social">
                             {% for social in social_links %}
                             <a href="{{ social.url }}" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="{{ social.platform }}">
-                                <i class="{{ social.icon_class }}"></i>
+                                <i class="{{ social.icon }}"></i>
                             </a>
                             {% endfor %}
                         </div>
@@ -38,6 +38,7 @@
                             <li><a href="{% url 'services:home' %}">Services</a></li>
                             <li><a href="{% url 'products:home' %}">Products</a></li>
                             <li><a href="{% url 'projects:home' %}">Projects</a></li>
+                            <li><a href="{% url 'gallery:home' %}">Gallery</a></li>
                             <li><a href="{% url 'contact:home' %}">Contact</a></li>
                         </ul>
                     </div>
@@ -49,7 +50,7 @@
                         <h5 class="footer-title">Our Services</h5>
                         <ul class="footer-links list-unstyled">
                             {% for service in footer_services|slice:":6" %}
-                            <li><a href="{% url 'services:detail' service.slug %}">{{ service.title }}</a></li>
+                            <li><a href="{% url 'services:detail' service.slug %}">{{ service.name }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -76,12 +77,6 @@
                             <li class="contact-item">
                                 <i class="fas fa-envelope"></i>
                                 <a href="mailto:{{ company.email }}">{{ company.email }}</a>
-                            </li>
-                            {% endif %}
-                            {% if company.working_hours %}
-                            <li class="contact-item">
-                                <i class="fas fa-clock"></i>
-                                <span>{{ company.working_hours }}</span>
                             </li>
                             {% endif %}
                         </ul>

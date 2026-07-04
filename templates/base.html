@@ -6,31 +6,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    
-    {% block meta %}{% endblock %}
-    
+
     <title>{% block title %}{{ company.company_name|default:"CTS" }}{% endblock %}</title>
-    
+
+    {% block meta %}
+    <meta name="description" content="{% firstof meta_description company.tagline %}">
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+    <meta property="og:type" content="{{ og_type|default:'website' }}">
+    <meta property="og:title" content="{% block og_title %}{% firstof meta_title company.company_name %}{% endblock %}">
+    <meta property="og:description" content="{% firstof meta_description company.tagline %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    {% if meta_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ meta_image.url }}">
+    {% elif company.logo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ company.logo.url }}">{% endif %}
+    {% if company.company_name %}<meta property="og:site_name" content="{{ company.company_name }}">{% endif %}
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% firstof meta_title company.company_name %}">
+    <meta name="twitter:description" content="{% firstof meta_description company.tagline %}">
+    {% if meta_image %}<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ meta_image.url }}">
+    {% elif company.logo %}<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ company.logo.url }}">{% endif %}
+    {% endblock %}
+
+    {% block schema %}
+    {% if company %}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "{{ company.company_name|escapejs }}",
+        "email": "{{ company.email|escapejs }}",
+        "telephone": "{{ company.phone|escapejs }}",
+        "address": "{{ company.address|escapejs }}"
+        {% if company.logo %}, "logo": "{{ request.scheme }}://{{ request.get_host }}{{ company.logo.url }}"{% endif %}
+    }
+    </script>
+    {% endif %}
+    {% endblock %}
 
     {% if company.favicon %}
     <link rel="icon" type="image/x-icon" href="{{ company.favicon.url }}">
     {% endif %}
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
-    
+
+    <!-- Slick Carousel (testimonial / clients sliders) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 
@@ -67,7 +103,10 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     
     {% block extra_js %}{% endblock %}

@@ -1,10 +1,9 @@
 from django.db import models
-from apps.common.models import ActiveModel, SlugModel, OrderableModel
+from apps.common.models import ActiveModel, SlugModel, OrderableModel, SEOModel, TimeStampedModel, WebPImageMixin
 from apps.common.utils import upload_to
 
 
 class Category(ActiveModel, SlugModel, OrderableModel):
-    """Product category model."""
     
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -19,8 +18,7 @@ class Category(ActiveModel, SlugModel, OrderableModel):
         return self.name
 
 
-class Product(ActiveModel, SlugModel, OrderableModel):
-    """Product model."""
+class Product(ActiveModel, SlugModel, OrderableModel, SEOModel, WebPImageMixin):
     
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
@@ -54,6 +52,20 @@ class Product(ActiveModel, SlugModel, OrderableModel):
     
     def get_features_list(self):
         return self.features_list
-    
+
     def get_specifications_list(self):
         return self.specifications_list
+
+
+class ProductImage(TimeStampedModel, OrderableModel, WebPImageMixin):
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ImageField(upload_to=upload_to)
+    caption = models.CharField(max_length=255, blank=True)
+
+    class Meta(OrderableModel.Meta):
+        verbose_name = 'Product Image'
+        verbose_name_plural = 'Product Images'
+
+    def __str__(self):
+        return f"{self.product.name} - Image {self.order}"

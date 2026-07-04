@@ -1,6 +1,3 @@
-"""
-Contact App URLs
-"""
 from django.urls import path
 from apps.contact import views
 

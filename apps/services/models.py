@@ -1,10 +1,9 @@
 from django.db import models
-from apps.common.models import ActiveModel, SlugModel, OrderableModel
+from apps.common.models import ActiveModel, SlugModel, OrderableModel, SEOModel, WebPImageMixin
 from apps.common.utils import upload_to
 
 
 class ServiceCategory(ActiveModel, SlugModel, OrderableModel):
-    """Service category model."""
     
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -19,10 +18,10 @@ class ServiceCategory(ActiveModel, SlugModel, OrderableModel):
         return self.name
 
 
-class Service(ActiveModel, SlugModel, OrderableModel):
-    """Service model."""
+class Service(ActiveModel, SlugModel, OrderableModel, SEOModel, WebPImageMixin):
     
     name = models.CharField(max_length=200)
+    category = models.ForeignKey(ServiceCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='services')
     
     ICON_CHOICES = [
         ('flaticon-warehouse', 'Warehouse'),

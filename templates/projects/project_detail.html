@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}{{ project.name }} - {{ company.company_name }}{% endblock %}
 
@@ -29,7 +29,7 @@
             <div class="col-lg-7">
                 {% if project.image %}
                     <div class="project-gallery" data-aos="fade-right">
-                        <img src="{{ project.image.url }}" alt="{{ project.name }}" class="img-fluid rounded shadow">
+                        <img src="{% webp_image project %}" alt="{{ project.name }}" class="img-fluid rounded shadow" loading="lazy">
                     </div>
                 {% else %}
                     <div class="project-gallery" data-aos="fade-right">
@@ -38,17 +38,27 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if project.gallery_images.all %}
+                    <div class="row g-2 mt-2">
+                        {% for gallery_image in project.gallery_images.all %}
+                            <div class="col-3">
+                                <img src="{% webp_thumb gallery_image %}" alt="{{ gallery_image.caption|default:project.name }}" class="img-fluid rounded" loading="lazy">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-            
+
             <!-- Project Info -->
             <div class="col-lg-5">
                 <div data-aos="fade-left">
                     {% if project.category %}
                         <span class="badge bg-primary mb-3">{{ project.category.name }}</span>
                     {% endif %}
+                    <span class="badge {% if project.status == 'ongoing' %}bg-warning text-dark{% else %}bg-success{% endif %} mb-3">{{ project.get_status_display }}</span>
                     <h2 class="mb-3">{{ project.name }}</h2>
                     <p class="lead text-muted mb-4">{{ project.description }}</p>
-                    
+
                     <!-- Project Meta -->
                     <div class="project-meta-box mb-4">
                         <h4 class="h6 mb-3">Project Details</h4>
@@ -65,29 +75,33 @@
                                     <strong>Client:</strong> {{ project.client }}
                                 </li>
                             {% endif %}
-                            {% if project.completion_date %}
+                            {% if project.end_date %}
                                 <li class="mb-2">
                                     <i class="fas fa-calendar text-primary me-2"></i>
-                                    <strong>Completed:</strong> {{ project.completion_date|date:"F Y" }}
+                                    <strong>{% if project.status == 'ongoing' %}Expected Completion{% else %}Completed{% endif %}:</strong> {{ project.end_date|date:"F Y" }}
                                 </li>
                             {% endif %}
-                            {% if project.project_value %}
+                            {% if project.budget %}
                                 <li class="mb-2">
-                                    <i class="fas fa-rupee-sign text-primary me-2"></i>
-                                    <strong>Project Value:</strong> ₹{{ project.project_value }}
+                                    <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                    <strong>Project Value:</strong> NPR {{ project.budget }}
                                 </li>
                             {% endif %}
                         </ul>
                     </div>
-                    
+
                     <!-- Scope of Work -->
-                    {% if project.scope %}
+                    {% if project.scope_of_work %}
                         <div class="project-scope mb-4">
                             <h4 class="h6 mb-3">Scope of Work</h4>
-                            <p>{{ project.scope|linebreaks }}</p>
+                            <ul class="list-unstyled">
+                                {% for scope_item in project.get_scope_list %}
+                                    <li class="mb-2"><i class="fas fa-check-circle text-primary me-2"></i>{{ scope_item }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     {% endif %}
-                    
+
                     <!-- Action Buttons -->
                     <div class="project-actions d-flex flex-wrap gap-3">
                         <a href="{% url 'contact:home' %}?project={{ project.name }}" class="btn btn-primary">
@@ -102,22 +116,6 @@
         </div>
     </div>
 </section>
-
-<!-- Project Content -->
-{% if project.content %}
-<section class="section section-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto" data-aos="fade-up">
-                <h3 class="h4 mb-4">Project Overview</h3>
-                <div class="project-content">
-                    {{ project.content|linebreaks }}
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
 
 <!-- Related Projects -->
 {% if related_projects %}
@@ -134,7 +132,7 @@
                     <article class="project-card">
                         {% if related.image %}
                             <div class="project-image">
-                                <img src="{{ related.image.url }}" alt="{{ related.name }}" class="img-fluid">
+                                <img src="{% webp_thumb related %}" alt="{{ related.name }}" class="img-fluid" loading="lazy">
                                 <div class="project-overlay">
                                     <a href="{% url 'projects:detail' related.slug %}" class="btn btn-light btn-sm">
                                         <i class="fas fa-eye me-2"></i> View
@@ -186,14 +184,14 @@
                                     <p class="testimonial-text">"{{ testimonial.message }}"</p>
                                     <div class="testimonial-author">
                                         {% if testimonial.image %}
-                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.name }}" class="testimonial-avatar">
+                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.client_name }}" class="testimonial-avatar">
                                         {% else %}
                                             <div class="testimonial-avatar bg-accent d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-user text-white"></i>
                                             </div>
                                         {% endif %}
                                         <div class="testimonial-info">
-                                            <h5>{{ testimonial.name }}</h5>
+                                            <h5>{{ testimonial.client_name }}</h5>
                                             {% if testimonial.designation %}
                                                 <span>{{ testimonial.designation }}</span>
                                             {% endif %}

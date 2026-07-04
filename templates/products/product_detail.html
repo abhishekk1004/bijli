@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static common_tags %}
 
 {% block title %}{{ product.name }} - {{ company.company_name }}{% endblock %}
 
@@ -29,13 +29,22 @@
             <div class="col-lg-6">
                 {% if product.image %}
                     <div class="product-gallery" data-aos="fade-right">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded shadow">
+                        <img src="{% webp_image product %}" alt="{{ product.name }}" class="img-fluid rounded shadow" loading="lazy">
                     </div>
                 {% else %}
                     <div class="product-gallery" data-aos="fade-right">
                         <div class="product-image-placeholder-lg">
                             <i class="fas fa-box"></i>
                         </div>
+                    </div>
+                {% endif %}
+                {% if product.gallery_images.all %}
+                    <div class="row g-2 mt-2">
+                        {% for gallery_image in product.gallery_images.all %}
+                            <div class="col-3">
+                                <img src="{% webp_thumb gallery_image %}" alt="{{ gallery_image.caption|default:product.name }}" class="img-fluid rounded" loading="lazy">
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endif %}
             </div>
@@ -52,7 +61,7 @@
                     {% if product.price %}
                         <div class="product-price mb-4">
                             <span class="price-label">Price:</span>
-                            <span class="price-value">₹{{ product.price }}</span>
+                            <span class="price-value">NPR {{ product.price }}</span>
                         </div>
                     {% endif %}
                     
@@ -80,18 +89,20 @@
                         <a href="{% url 'contact:home' %}?product={{ product.name }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-shopping-cart me-2"></i> Request Quote
                         </a>
-                        <a href="tel:+919876543210" class="btn btn-outline-primary btn-lg">
+                        {% if company.phone %}
+                        <a href="tel:{{ company.phone }}" class="btn btn-outline-primary btn-lg">
                             <i class="fas fa-phone me-2"></i> Call Now
                         </a>
+                        {% endif %}
                     </div>
-                    
+
                     <!-- Quick Info -->
                     <div class="product-info mt-4 pt-4 border-top">
                         <div class="row g-3">
                             <div class="col-6">
                                 <div class="info-item">
                                     <i class="fas fa-certificate text-primary me-2"></i>
-                                    <span>BIS Certified</span>
+                                    <span>Quality Certified</span>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -103,7 +114,7 @@
                             <div class="col-6">
                                 <div class="info-item">
                                     <i class="fas fa-truck text-primary me-2"></i>
-                                    <span>Pan India Delivery</span>
+                                    <span>Nationwide Delivery</span>
                                 </div>
                             </div>
                             <div class="col-6">
@@ -120,22 +131,6 @@
     </div>
 </section>
 
-<!-- Product Content -->
-{% if product.content %}
-<section class="section section-light">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto" data-aos="fade-up">
-                <h3 class="h4 mb-4">Product Details</h3>
-                <div class="product-content">
-                    {{ product.content|linebreaks }}
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
 <!-- Related Products -->
 {% if related_products %}
 <section class="section">
@@ -150,7 +145,7 @@
                 <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'100' }}">
                     <div class="card product-card h-100">
                         {% if related.image %}
-                            <img src="{{ related.image.url }}" class="card-img-top" alt="{{ related.name }}">
+                            <img src="{% webp_thumb related %}" class="card-img-top" alt="{{ related.name }}" loading="lazy">
                         {% else %}
                             <div class="product-image-placeholder">
                                 <i class="fas fa-box"></i>
@@ -160,7 +155,7 @@
                             <h3 class="card-title h6">{{ related.name }}</h3>
                             <p class="card-text small text-muted">{{ related.description|truncatewords:10 }}</p>
                             {% if related.price %}
-                                <p class="price-tag mb-3">₹{{ related.price }}</p>
+                                <p class="price-tag mb-3">NPR {{ related.price }}</p>
                             {% endif %}
                             <a href="{% url 'products:detail' related.slug %}" class="btn btn-outline-primary btn-sm w-100">
                                 View Details
@@ -193,14 +188,14 @@
                                     <p class="testimonial-text">"{{ testimonial.message }}"</p>
                                     <div class="testimonial-author">
                                         {% if testimonial.image %}
-                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.name }}" class="testimonial-avatar">
+                                            <img src="{{ testimonial.image.url }}" alt="{{ testimonial.client_name }}" class="testimonial-avatar">
                                         {% else %}
                                             <div class="testimonial-avatar bg-accent d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-user text-white"></i>
                                             </div>
                                         {% endif %}
                                         <div class="testimonial-info">
-                                            <h5>{{ testimonial.name }}</h5>
+                                            <h5>{{ testimonial.client_name }}</h5>
                                             {% if testimonial.designation %}
                                                 <span>{{ testimonial.designation }}</span>
                                             {% endif %}

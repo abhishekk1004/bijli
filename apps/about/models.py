@@ -1,18 +1,16 @@
 from django.db import models
 from apps.core.models import SlugModel
+from apps.common.models import ActiveModel, SingletonModel, WebPImageMixin
+from apps.common.utils import upload_to
 
 
-class About(SlugModel):
-    """Model for about page content"""
+class About(ActiveModel, SlugModel):
     title = models.CharField(max_length=500)
     description = models.TextField(blank=True)
     content = models.TextField(blank=True)
     mission = models.TextField(blank=True)
     vision = models.TextField(blank=True)
     image = models.ImageField(upload_to='about/', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = 'About'
@@ -24,7 +22,6 @@ class About(SlugModel):
 
 
 class Milestone(models.Model):
-    """Model for company milestones"""
     year = models.CharField(max_length=10)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -43,7 +40,6 @@ class Milestone(models.Model):
 
 
 class Stat(models.Model):
-    """Model for statistics/numbers"""
     number = models.CharField(max_length=20)
     label = models.CharField(max_length=100)
     icon = models.CharField(max_length=50, blank=True)
@@ -61,8 +57,7 @@ class Stat(models.Model):
         return f"{self.number} - {self.label}"
 
 
-class TeamMember(models.Model):
-    """Model for team members"""
+class TeamMember(WebPImageMixin, models.Model):
     name = models.CharField(max_length=200)
     designation = models.CharField(max_length=200)
     image = models.ImageField(upload_to='team/', blank=True, null=True)
@@ -86,8 +81,22 @@ class TeamMember(models.Model):
         return self.name
 
 
+class ChairmanMessage(SingletonModel, ActiveModel):
+    """Chairman's message shown on the About page. Restricted to a single row."""
+    name = models.CharField(max_length=200)
+    designation = models.CharField(max_length=200, default='Chairman')
+    photo = models.ImageField(upload_to=upload_to, blank=True, null=True)
+    message = models.TextField()
+
+    class Meta:
+        verbose_name = "Chairman's Message"
+        verbose_name_plural = "Chairman's Message"
+
+    def __str__(self):
+        return f"{self.name} - {self.designation}"
+
+
 class FAQ(models.Model):
-    """Model for FAQ items"""
     question = models.CharField(max_length=500)
     answer = models.TextField()
     order = models.PositiveIntegerField(default=0)

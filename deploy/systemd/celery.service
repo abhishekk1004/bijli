@@ -1,0 +1,17 @@
+[Unit]
+Description=CTS CMS Celery worker
+Requires=network.target
+After=network.target redis-server.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/cts
+EnvironmentFile=/srv/cts/.env
+ExecStart=/srv/cts/venv/bin/celery -A bijli worker --loglevel=info --concurrency=2
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
