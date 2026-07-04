@@ -123,8 +123,7 @@ class AlbumSerializer(serializers.ModelSerializer):
 class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Testimonial
-        fields = ['client_name', 'company', 'designation', 'image', 'message', 'rating', 'is_active']
-
+        fields = ['id', 'client_name', 'company', 'designation', 'image', 'message', 'rating', 'is_active']
 
 class CompanyInfoSerializer(serializers.ModelSerializer):
     class Meta:

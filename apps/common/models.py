@@ -1,7 +1,7 @@
 import uuid
 
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models
 from imagekit import ImageSpec
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFit
@@ -107,6 +107,10 @@ class WebPLogoMixin(models.Model):
 class SingletonModel(models.Model):
     """Abstract mixin that restricts a model to a single database row."""
 
+    # DB-enforced guard: makes the "only one row" invariant hold even when the
+    # exists()-then-save() check below races under concurrent requests.
+    singleton_guard = models.PositiveSmallIntegerField(default=1, unique=True, editable=False)
+
     class Meta:
         abstract = True
 
@@ -115,7 +119,14 @@ class SingletonModel(models.Model):
         # instantiation time, not at save time, so it's already set on a fresh instance.
         if self._state.adding and type(self).objects.exists():
             raise ValidationError(f'Only one {type(self).__name__} instance is allowed.')
-        super().save(*args, **kwargs)
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError:
+            # The exists()-then-save() check above can race under concurrent
+            # requests; catch the DB-level unique constraint violation on
+            # singleton_guard and normalise it to the same ValidationError
+            # shape callers expect.
+            raise ValidationError(f'Only one {type(self).__name__} instance is allowed.')
 
     @classmethod
     def load(cls):

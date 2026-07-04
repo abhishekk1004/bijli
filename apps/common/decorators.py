@@ -21,7 +21,11 @@ def ratelimit_post(key_prefix: str, limit: int = 5, window: int = 300):
                 elif count >= limit:
                     return HttpResponseForbidden('Too many submissions. Please try again later.')
                 else:
-                    cache.incr(cache_key)
+                    try:
+                        cache.incr(cache_key)
+                    except ValueError:
+                        # Key expired between get() and incr(); restart the window.
+                        cache.set(cache_key, 1, window)
             return view_func(request, *args, **kwargs)
         return wrapped
     return decorator

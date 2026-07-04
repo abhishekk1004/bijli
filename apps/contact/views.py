@@ -41,6 +41,8 @@ def contact_submit(request):
         errors.append('Name is required.')
     elif len(name) < 2:
         errors.append('Name must be at least 2 characters.')
+    elif len(name) > 200:
+        errors.append('Name must be at most 200 characters.')
 
     if not email:
         errors.append('Email is required.')
@@ -56,6 +58,8 @@ def contact_submit(request):
         errors.append('Subject is required.')
     elif len(subject) < 3:
         errors.append('Subject must be at least 3 characters.')
+    elif len(subject) > 200:
+        errors.append('Subject must be at most 200 characters.')
 
     if not message:
         errors.append('Message is required.')

@@ -13,9 +13,13 @@ class ImagePreviewMixin:
         image = getattr(obj, self.image_field_name, None)
         if not image:
             return '—'
+        try:
+            url = image.url
+        except (ValueError, OSError):
+            return '—'
         return format_html(
             '<img src="{}" style="height:{}px;border-radius:4px;" />',
-            image.url, self.preview_height,
+            url, self.preview_height,
         )
 
 
