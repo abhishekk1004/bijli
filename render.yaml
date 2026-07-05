@@ -1,0 +1,79 @@
+# Render Blueprint. In the Render dashboard: New > Blueprint > pick this repo.
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: cts-db
+    plan: basic-256mb          # free plan also works but the DB is deleted after 30 days
+    region: singapore
+
+services:
+  - type: keyvalue             # Redis-compatible cache
+    name: cts-redis
+    plan: free
+    region: singapore
+    ipAllowList: []            # internal connections only
+
+  - type: web
+    name: cts-web
+    runtime: python
+    plan: starter              # free plan works for testing, but sleeps when idle and cannot mount the media disk
+    region: singapore
+    buildCommand: ./deploy/render-build.sh
+    startCommand: GUNICORN_BIND=0.0.0.0:$PORT gunicorn bijli.wsgi:application --config deploy/gunicorn.conf.py
+    healthCheckPath: /
+    disk:
+      name: media              # keeps admin-uploaded images across deploys
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com   # append your custom domain once you attach one
+      - key: DJANGO_DATABASE_ENGINE
+        value: django.db.backends.postgresql
+      - key: DJANGO_DATABASE_NAME
+        fromDatabase:
+          name: cts-db
+          property: database
+      - key: DJANGO_DATABASE_USER
+        fromDatabase:
+          name: cts-db
+          property: user
+      - key: DJANGO_DATABASE_PASSWORD
+        fromDatabase:
+          name: cts-db
+          property: password
+      - key: DJANGO_DATABASE_HOST
+        fromDatabase:
+          name: cts-db
+          property: host
+      - key: DJANGO_DATABASE_PORT
+        fromDatabase:
+          name: cts-db
+          property: port
+      - key: DJANGO_REDIS_LOCATION
+        fromService:
+          type: keyvalue
+          name: cts-redis
+          property: connectionString
+      # No paid worker: run notification tasks inline in the request instead of via a broker.
+      - key: DJANGO_CELERY_TASK_ALWAYS_EAGER
+        value: "True"
+      # Set these four in the dashboard (sync: false keeps secrets out of the repo).
+      - key: DJANGO_EMAIL_BACKEND
+        sync: false
+      - key: DJANGO_EMAIL_HOST
+        sync: false
+      - key: DJANGO_EMAIL_HOST_USER
+        sync: false
+      - key: DJANGO_EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DJANGO_DEFAULT_FROM_EMAIL
+        sync: false
+      - key: DJANGO_ADMIN_NOTIFICATION_EMAIL
+        sync: false

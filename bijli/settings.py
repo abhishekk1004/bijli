@@ -287,6 +287,9 @@ SECURE_BROWSER_XSS_FILTER = True
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
+    # SSL terminates at nginx; trust its X-Forwarded-Proto header or every
+    # proxied request looks insecure and SECURE_SSL_REDIRECT loops forever.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
