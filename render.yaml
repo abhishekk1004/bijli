@@ -7,12 +7,6 @@ databases:
     region: singapore
 
 services:
-  - type: keyvalue             # Redis-compatible cache
-    name: cts-redis
-    plan: free
-    region: singapore
-    ipAllowList: []            # internal connections only
-
   - type: web
     name: cts-web
     runtime: python
@@ -56,11 +50,6 @@ services:
         fromDatabase:
           name: cts-db
           property: port
-      - key: DJANGO_REDIS_LOCATION
-        fromService:
-          type: keyvalue
-          name: cts-redis
-          property: connectionString
       # No paid worker: run notification tasks inline in the request instead of via a broker.
       - key: DJANGO_CELERY_TASK_ALWAYS_EAGER
         value: "True"

@@ -272,20 +272,28 @@ ADMIN_NOTIFICATION_EMAIL = _env('DJANGO_ADMIN_NOTIFICATION_EMAIL', default='')
 
 
 
-# Cache backend
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': _env('DJANGO_REDIS_LOCATION', default=_env('REDIS_URL', default='redis://127.0.0.1:6379/1')),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            # Redis being briefly unavailable should degrade to DB queries, not 500 the site.
-            'IGNORE_EXCEPTIONS': True,
-        },
-    }
-}
+#Redis when configured, otherwise per-process local memory.
+REDIS_LOCATION = _env('DJANGO_REDIS_LOCATION', default=_env('REDIS_URL'))
 
-DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
+if REDIS_LOCATION:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_LOCATION,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                # Redis being briefly unavailable
+                'IGNORE_EXCEPTIONS': True,
+            },
+        }
+    }
+    DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 CACHE_TTL = int(_env('DJANGO_CACHE_TTL', default='3600'))
 
@@ -302,8 +310,7 @@ SECURE_BROWSER_XSS_FILTER = True
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
-    # SSL terminates at nginx; trust its X-Forwarded-Proto header or every
-    # proxied request looks insecure and SECURE_SSL_REDIRECT loops forever.
+  
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True

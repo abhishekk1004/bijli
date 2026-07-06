@@ -7,8 +7,14 @@ import multiprocessing
 import os
 
 bind = os.environ.get('GUNICORN_BIND', '0.0.0.0:8000')
-workers = int(os.environ.get('GUNICORN_WORKERS', min(multiprocessing.cpu_count() * 2 + 1, 4)))
-threads = int(os.environ.get('GUNICORN_THREADS', 2))
+# Precedence: explicit override, then the platform's hint (Render sets
+# WEB_CONCURRENCY from instance CPU), then a conservative local default.
+workers = int(
+    os.environ.get('GUNICORN_WORKERS')
+    or os.environ.get('WEB_CONCURRENCY')
+    or min(multiprocessing.cpu_count() * 2 + 1, 4)
+)
+threads = int(os.environ.get('GUNICORN_THREADS', 4))
 timeout = 60
 graceful_timeout = 30
 keepalive = 5
