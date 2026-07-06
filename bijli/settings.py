@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -127,26 +128,40 @@ WSGI_APPLICATION = 'bijli.wsgi.application'
 
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': _env('DJANGO_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': _env('DJANGO_DATABASE_NAME', str(BASE_DIR / 'db.sqlite3')),
+# DATABASE_URL (the usual PaaS convention) wins; otherwise fall back to the
+# discrete DJANGO_DATABASE_* variables, and finally to local sqlite in DEBUG.
+DATABASE_URL = _env('DATABASE_URL')
+
+if DATABASE_URL:
+    _db = urlsplit(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _db.path.lstrip('/'),
+            'USER': unquote(_db.username or ''),
+            'PASSWORD': unquote(_db.password or ''),
+            'HOST': _db.hostname or '',
+            'PORT': _db.port or 5432,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': _env('DJANGO_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+            'NAME': _env('DJANGO_DATABASE_NAME', str(BASE_DIR / 'db.sqlite3')),
+        }
+    }
+    for option, var in [('USER', 'DJANGO_DATABASE_USER'), ('PASSWORD', 'DJANGO_DATABASE_PASSWORD'),
+                        ('HOST', 'DJANGO_DATABASE_HOST'), ('PORT', 'DJANGO_DATABASE_PORT')]:
+        value = _env(var)
+        if value:
+            DATABASES['default'][option] = value
 
-DATABASE_USER = _env('DJANGO_DATABASE_USER')
-DATABASE_PASSWORD = _env('DJANGO_DATABASE_PASSWORD')
-DATABASE_HOST = _env('DJANGO_DATABASE_HOST')
-DATABASE_PORT = _env('DJANGO_DATABASE_PORT')
-
-if DATABASE_USER:
-    DATABASES['default']['USER'] = DATABASE_USER
-if DATABASE_PASSWORD:
-    DATABASES['default']['PASSWORD'] = DATABASE_PASSWORD
-if DATABASE_HOST:
-    DATABASES['default']['HOST'] = DATABASE_HOST
-if DATABASE_PORT:
-    DATABASES['default']['PORT'] = DATABASE_PORT
+if not DEBUG and 'postgresql' in DATABASES['default']['ENGINE'] and not DATABASES['default'].get('HOST'):
+    raise ImproperlyConfigured(
+        'No database host configured. Set DATABASE_URL, or DJANGO_DATABASE_HOST '
+        'plus the other DJANGO_DATABASE_* variables.'
+    )
 
 
 
@@ -236,7 +251,7 @@ CORS_ALLOWED_ORIGINS = _env_list('DJANGO_CORS_ALLOWED_ORIGINS')
 
 # Celery
 
-CELERY_BROKER_URL = _env('DJANGO_CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
+CELERY_BROKER_URL = _env('DJANGO_CELERY_BROKER_URL', default=_env('REDIS_URL', default='redis://127.0.0.1:6379/0'))
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_ACCEPT_CONTENT = ['json']
@@ -261,7 +276,7 @@ ADMIN_NOTIFICATION_EMAIL = _env('DJANGO_ADMIN_NOTIFICATION_EMAIL', default='')
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': _env('DJANGO_REDIS_LOCATION', default='redis://127.0.0.1:6379/1'),
+        'LOCATION': _env('DJANGO_REDIS_LOCATION', default=_env('REDIS_URL', default='redis://127.0.0.1:6379/1')),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             # Redis being briefly unavailable should degrade to DB queries, not 500 the site.
